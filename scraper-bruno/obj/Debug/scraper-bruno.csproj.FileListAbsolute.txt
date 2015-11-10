@@ -1,0 +1,12 @@
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\scraper-bruno.exe.config
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\scraper-bruno.exe
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\scraper-bruno.pdb
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\CsvHelper.dll
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\HtmlAgilityPack.dll
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\CsvHelper.pdb
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\CsvHelper.xml
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\HtmlAgilityPack.pdb
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\bin\Debug\HtmlAgilityPack.xml
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\obj\Debug\scraper-bruno.csprojResolveAssemblyReference.cache
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\obj\Debug\scraper-bruno.exe
+c:\users\brmedi\documents\visual studio 2015\Projects\scraper-bruno\scraper-bruno\obj\Debug\scraper-bruno.pdb
