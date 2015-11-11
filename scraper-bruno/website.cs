@@ -9,6 +9,7 @@ namespace scraper_bruno
     class Website
     {
         public string Url { get; set; }
+        public bool wasFound { get; set; }
         public Dictionary<string , string> Languages { get; set; }
         public Dictionary<string, string> Cms { get; set; }
         public Dictionary<string, string> JSLibraries { get; set; }

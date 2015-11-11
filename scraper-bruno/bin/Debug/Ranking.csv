@@ -1,0 +1,9 @@
+Country, Rank, Site URL, Adult rating, Malware rating, UU, PV, Score, Test on Browser detection, Test on CSS Prefixes, Test on Edge, Test on JsLibs, Test on Plugins, Tests ran without errors, Is in CV list, Last test, Dwell time, Internal redirects, redirects
+Mexico,19945,dqr.com.mx,0,0,6,485,70,Fail,Pass,Pass,Fail,Pass,Yes,No,11/5/2015 0:00,15006,15,26
+Mexico,19952,cyberkidz.mx,0,0,6588,484,70,Pass,Pass,Fail,Pass,Pass,Yes,No,11/5/2015 0:00,39544,0,0
+Mexico,19954,dagal.com.mx,0,0,4495,484,70,Pass,Fail,Pass,Fail,Pass,Yes,No,11/5/2015 0:00,17951,45,48
+Mexico,19955,herralum.com.mx,0,0,4495,484,70,Fail,Pass,Pass,Fail,Pass,Yes,No,11/5/2015 0:00,20949,0,0
+Mexico,19959,pixeledhotel.us,0,0,2614,484,100,Pass,Pass,Pass,Pass,Pass,Yes,No,11/5/2015 0:00,20808,71,90
+Mexico,19968,didacticosjml.com.mx,0,0,10040,483,90,Fail,Pass,Pass,Pass,Pass,Yes,No,11/5/2015 0:00,48440,0,0
+Mexico,19972,autosaccidentadoslobato.com,0,0,6737,483,90,Fail,Pass,Pass,Pass,Pass,Yes,No,11/5/2015 0:00,18981,0,0
+Mexico,19996,dofiscal.net,0,0,3556,482,70,Pass,Pass,Fail,Pass,Pass,Yes,No,11/5/2015 0:00,57605,0,0
