@@ -14,12 +14,17 @@ namespace GetLinks
     {
         public static bool LimitReached { get; set; }
         public static int Contador { get; set; }
+        public static int ContadorListos { get; set; }
+
+
         static List<Website> Lista = new List<Website>();
         static void Main(string[] args)
         {
             //Obtenemos el listado de sitios web del csv y lo hacemos una List
             String inputFile = "input.csv";
+            String outputFile = "output.csv";
             Contador = 0;
+            ContadorListos = 0;
             System.Console.WriteLine("Leyendo archivo " + inputFile + "\n");
             //falta validar que exista el archivo
             try
@@ -36,7 +41,7 @@ namespace GetLinks
                     //Alteramos o generamos un nuevo listado con la info recabada
                     List<Website> updatedList = new List<Website>();
                     LimitReached = false;
-                    StreamWriter textWriter = new StreamWriter(@"output.csv");
+                    StreamWriter textWriter = new StreamWriter(@outputFile);
                     var csvW = new CsvWriter(textWriter);
                     csvW.WriteHeader<Website>();
                     foreach (Website item in inputList)
@@ -55,7 +60,7 @@ namespace GetLinks
 
                             if (item.WasDetected)
                             {//Si ya se tiene se pasa como viene
-
+                                ContadorListos++;
                                 aux = item;
                             }
                             else
@@ -72,6 +77,7 @@ namespace GetLinks
                             }
                             updatedList.Add(aux);
                             csvW.WriteRecord(aux);
+                            Console.WriteLine("Se llevan escaneados " + ContadorListos + " de " + inputList.Count + " sitios");
 
 
                         }
@@ -82,22 +88,27 @@ namespace GetLinks
                     //Creamos un archivo CSV con la última información
 
                     textWriter.Close();
+                    Console.WriteLine("Se ha guardado el archivo 'output.csv'");
+                    System.IO.File.Move(inputFile, inputFile + ".backup");
+                    System.IO.File.Move(outputFile, inputFile);
+                    Console.WriteLine("También se renombró el archivo '"+inputFile + "' a '"+inputFile+".backup' ");
+                    Console.WriteLine("Y se renombró el archivo '"+outputFile+"' a '"+inputFile+"' ");
+                    Console.WriteLine("Basta que corras el programa otra vez para seguir avanzando ");
+
+
                 }
             }
             catch (Exception e)
             {
-                
                 Console.WriteLine("Error al abrir el archivo: "+ inputFile);
                 Console.WriteLine("La excepción dice: " + e);
                 Console.ReadKey();
-                throw;
             }
             if (LimitReached)
             {
                 Console.WriteLine("\n---------------------------------------------");
                 Console.WriteLine("Límite de llamadas por IP por día alcanzado.");
                 Console.WriteLine("Conectate a otra red o cambia tu ip pública para volver a intentarlo");
-                Console.WriteLine("No olvides renombrar el archivo 'output.csv' a 'input.csv' para guardar los éxitos");
 
 
             }
@@ -143,6 +154,7 @@ namespace GetLinks
                             Console.WriteLine("Info obtenida.");
                             result.WasDetected = true;
                             Contador++;
+                            ContadorListos++;
 
                             HtmlNode site = main.SelectSingleNode(".//h1");
                             foreach (HtmlNode node in main.ChildNodes)
@@ -232,7 +244,6 @@ namespace GetLinks
                     result.WasDetected = false;
                     Console.WriteLine("Hubo un error al sacar la información del Url: " + url);
                     Console.WriteLine("La excepción dice: \n"+ e);
-                    throw;
                 }
             }
 
