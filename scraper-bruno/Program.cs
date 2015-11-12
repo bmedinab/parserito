@@ -38,6 +38,7 @@ namespace GetLinks
                     LimitReached = false;
                     StreamWriter textWriter = new StreamWriter(@"output.csv");
                     var csvW = new CsvWriter(textWriter);
+                    csvW.WriteHeader<Website>();
                     foreach (Website item in inputList)
                     {
                         //hay que checar limitreached, si ya se tiene y si no es un URL válido
