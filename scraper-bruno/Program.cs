@@ -60,6 +60,7 @@ namespace GetLinks
 
                             if (item.WasDetected)
                             {//Si ya se tiene se pasa como viene
+                                Console.WriteLine(item.Url + " -- Este sitio ya se tiene");
                                 ContadorListos++;
                                 aux = item;
                             }
@@ -77,7 +78,7 @@ namespace GetLinks
                             }
                             updatedList.Add(aux);
                             csvW.WriteRecord(aux);
-                            Console.WriteLine("Se llevan escaneados " + ContadorListos + " de " + inputList.Count + " sitios");
+                            Console.WriteLine("Escaneados " + ContadorListos + " de " + inputList.Count + " sitios\n");
 
 
                         }
@@ -89,9 +90,11 @@ namespace GetLinks
 
                     textWriter.Close();
                     Console.WriteLine("Se ha guardado el archivo 'output.csv'");
-                    System.IO.File.Move(inputFile, inputFile + ".backup");
+                    TimeSpan ts = DateTime.Now.Subtract(new DateTime(2011, 2, 1));
+                    string newInputfilename = inputFile + ts.TotalMinutes;
+                    System.IO.File.Move(inputFile, newInputfilename);
                     System.IO.File.Move(outputFile, inputFile);
-                    Console.WriteLine("También se renombró el archivo '"+inputFile + "' a '"+inputFile+".backup' ");
+                    Console.WriteLine("También se renombró el archivo '"+inputFile + "' a '"+newInputfilename+"' ");
                     Console.WriteLine("Y se renombró el archivo '"+outputFile+"' a '"+inputFile+"' ");
                     Console.WriteLine("Basta que corras el programa otra vez para seguir avanzando ");
 
@@ -244,6 +247,11 @@ namespace GetLinks
                     result.WasDetected = false;
                     Console.WriteLine("Hubo un error al sacar la información del Url: " + url);
                     Console.WriteLine("La excepción dice: \n"+ e);
+                    Console.WriteLine("\nProbablemente no tienes internet");
+
+                    Console.WriteLine("Presiona cualquier tecla para continuar \n" + e);
+
+                    Console.ReadKey();
                 }
             }
 
