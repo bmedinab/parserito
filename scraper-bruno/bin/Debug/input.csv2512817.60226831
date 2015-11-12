@@ -169,7 +169,7 @@ miiec.com.mx,True,,,,,,
 udlap.mx,True,,,,,JQuery,1.11.0
 clickonero.com.mx,True,,,ASP.NET,4.0.30319,JQuery,1.8.3
 idmexico.com.mx,True,,,ASP.NET,4.0.30319,,
-Eleconomista.mx,False,,,,,,
+Eleconomista.com.mx,False,,,,,,
 asesordeseguros.com.mx,True,,,,,,
 Interjet.com.mx,True,,,ASP.NET,2.0.50727,JQuery,
 tralcom.com,True,,,ASP.NET,,,
@@ -1296,7 +1296,7 @@ rtp.com.mx,True,,,,,,
 sofiajuegos.com,True,,,,,,
 syscomcctv.com.mx,True,,,,,,
 Fotomecanica.mx,True,Magento,,PHP,5.4.45,JQuery,1.7.2
-Eleconomista.com.mx,False,,,,,,
+Eleconomista.mx,False,,,,,,
 casandra.com.mx,True,,,ASP.NET,4.0.30319,,
 unefon.com.mx,True,,,PHP,N/A,JQuery,1.11.2
 orientat.com.mx,True,,,,,,

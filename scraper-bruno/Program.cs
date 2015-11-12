@@ -136,23 +136,25 @@ namespace GetLinks
                  
                 //HtmlDocument doc = new HtmlWeb().Load("http://guess.scritch.org/%2Bguess/?url=skyalert.mx");
                 HtmlNode main = doc.DocumentNode.SelectSingleNode("//*[@class='tech_main']");
-                    String mainText = main.InnerHtml;
-                    if(mainText.Contains("This website is redirected to"))
-                    {
-                        HtmlNode URLsugerida = main.SelectSingleNode("//*[@class='no_und']");
-                        Console.WriteLine("La url es incorrecta se está actualizando a "+ URLsugerida.InnerText);
-                        Console.WriteLine("Es necesario volver a correr el programa para volver a intentar obtener la info de este sitio.");
-                        result.Url = URLsugerida.InnerText;
-
-
-                    }else if (mainText.Contains("Site under maintenance"))
-                    {
-                        LimitReached = true;
-                        Console.WriteLine("Llegaste a la cantidad de requests permitidos. ");
-                    }
-                    else
-                    {
+                   
                         if (main != null)
+                        {
+                        String mainText = main.InnerHtml;
+                        if (mainText.Contains("This website is redirected to"))
+                        {
+                            HtmlNode URLsugerida = main.SelectSingleNode("//*[@class='no_und']");
+                            Console.WriteLine("La url es incorrecta se está actualizando a " + URLsugerida.InnerText);
+                            Console.WriteLine("Es necesario volver a correr el programa para volver a intentar obtener la info de este sitio.");
+                            result.Url = URLsugerida.InnerText;
+
+
+                        }
+                        else if (mainText.Contains("Site under maintenance"))
+                        {
+                            LimitReached = true;
+                            Console.WriteLine("Llegaste a la cantidad de requests permitidos. ");
+                        }
+                        else
                         {
                             Console.WriteLine("Info obtenida.");
                             result.WasDetected = true;
@@ -231,12 +233,18 @@ namespace GetLinks
                             }
                             Console.WriteLine("Scan del sitio terminado");
                         }
-                        else
-                        {//Falta checar si ya dice under-maintenance
-                            Console.WriteLine("El sitio " + url + " no fue encontado en el scanner (probablemente no ha sido indexado), intente después\n");
-                            Console.WriteLine("O probablemente ya se acabaron los requests");
-                        }
+
                     }
+                    else
+                        {//Falta checar si no se tiene registro
+                            
+                        Console.WriteLine("El sitio " + url + " no fue encontado en el scanner (probablemente no ha sido indexado), intente después\n");
+                        Console.WriteLine("La página dice: \n" + doc.DocumentNode.InnerText);
+                        Console.WriteLine("O probablemente tu proxy no sirve. Presiona enter para seguir");
+                        Console.ReadKey();
+                            
+                        }
+                    
 
                 
                 }
