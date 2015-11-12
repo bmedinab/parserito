@@ -12,202 +12,234 @@ namespace GetLinks
 {
     class Program
     {
+        public static bool LimitReached { get; set; }
+        public static int Contador { get; set; }
         static List<Website> Lista = new List<Website>();
         static void Main(string[] args)
         {
-            //List<string> list = new List<string>();
-            //list.Add("edu.mx");
-            //list.Add("skyalert.mx");
-            //list.Add("andrea.com");
-            //list.Add("iberopuebla.mx");
-            //Obtaining URLs from csv file
-            String inputFile = "Ranking.csv";
-            System.Console.WriteLine("Leyendo archivo " + inputFile +"\n");
-            List<string> list = GetWebsitesFromCSV(inputFile);
-            System.Console.WriteLine("Se obtuvieron " + list.Count + " url válidos \n");
-            //if the list is not empty we get their info
-            if (list.Count >0)
+            //Obtenemos el listado de sitios web del csv y lo hacemos una List
+            String inputFile = "input.csv";
+            Contador = 0;
+            System.Console.WriteLine("Leyendo archivo " + inputFile + "\n");
+            //falta validar que exista el archivo
+            try
             {
-                ParallelOptions ops = new ParallelOptions();
-                ops.MaxDegreeOfParallelism = -1;
+                StreamReader textReader = new StreamReader(@inputFile);
+                var csv = new CsvReader(textReader);
 
-                if (Parallel.ForEach(list, ops, (url) => {
-                    System.Console.WriteLine("inicio: " + url);
-                    Execute(url);
-                }).IsCompleted)
+                List<Website> inputList = csv.GetRecords<Website>().ToList();
+                textReader.Close();
+                // *sigh* no procesa whitespaces
+                System.Console.WriteLine("Se obtuvieron " + inputList.Count + " url válidos \n");
+                if (inputList.Count > 0)
                 {
-                    System.Console.WriteLine("terminé!");
-                }
-                int count = 1;
-                foreach (var item in Lista)
-                {
+                    //Alteramos o generamos un nuevo listado con la info recabada
+                    List<Website> updatedList = new List<Website>();
+                    LimitReached = false;
+                    StreamWriter textWriter = new StreamWriter(@"output.csv");
+                    var csvW = new CsvWriter(textWriter);
+                    foreach (Website item in inputList)
+                    {
+                        //hay que checar limitreached, si ya se tiene y si no es un URL válido
+                        if (item.Url.IndexOf(" ") > -1)
+                        { //Si no es URL válido lo quitamos de la lista
 
-                    System.Console.WriteLine("\nElemento " + count + " :\n");
-                    System.Console.WriteLine(item);
-                    count++;
+                            Console.WriteLine("URL inválido, se quita de la lista");
 
+                        }
+                        else
+                        { //Si es URL válido hay que agregarlo
+
+                            Website aux = new Website();
+
+                            if (item.WasDetected)
+                            {//Si ya se tiene se pasa como viene
+
+                                aux = item;
+                            }
+                            else
+                            {//Si no se tiene hay que conseguirlo
+                                if (LimitReached)
+                                {//si se alcanzó el límite hay que copiar y pegar sin nada más
+                                    aux = item;
+                                    aux.WasDetected = false;
+                                }
+                                else
+                                {//si no se alcanzó el límite hay que obetener y verificar si se alcanzó el límite
+                                    aux = obtainWebsiteInfo(item.Url);
+                                }
+                            }
+                            updatedList.Add(aux);
+                            csvW.WriteRecord(aux);
+
+
+                        }
+
+                    }
+
+                    Console.WriteLine("Se obtuvieron " + Contador + " nuevos registros\n");
+                    //Creamos un archivo CSV con la última información
+
+                    textWriter.Close();
                 }
-                System.Console.WriteLine(count + " websites fueron escaneados");
-                //Here we print the values found on a CSV
-                GenerateCSVFileFromResults(Lista);
+            }
+            catch (Exception e)
+            {
+                
+                Console.WriteLine("Error al abrir el archivo: "+ inputFile);
+                Console.WriteLine("La excepción dice: " + e);
+                Console.ReadKey();
+                throw;
+            }
+            if (LimitReached)
+            {
+                Console.WriteLine("\n---------------------------------------------");
+                Console.WriteLine("Límite de llamadas por IP por día alcanzado.");
+                Console.WriteLine("Conectate a otra red o cambia tu ip pública para volver a intentarlo");
+                Console.WriteLine("No olvides renombrar el archivo 'output.csv' a 'input.csv' para guardar los éxitos");
+
 
             }
+
             Console.ReadKey();
         }
-        private static void GenerateCSVFileFromResults(List<Website> list)
-        {
-            StreamWriter sw = new StreamWriter(@"resultados.csv");
-            var csv = new CsvWriter(sw);
-            csv.WriteField("URL");
-            csv.WriteField("Detected");
-            csv.WriteField("Detected CMS Name");
-            csv.WriteField("Detected CMS Version");
-            csv.WriteField("Detected Language Name");
-            csv.WriteField("Detected Language Version");
-            csv.WriteField("Detected JS Lib Name");
-            csv.WriteField("Detected JS Lib Version");
-            csv.NextRecord();
-            foreach (var item in list)
-            {
-                csv.WriteField(item.Url);
-                if(item.Cms!= null)
-                {
 
-                }
-                else
-                {
-                    csv.WriteField("");
-                    csv.WriteField("");
-                }
-
-                csv.NextRecord();
-            }
-        }
-        private static List<string> GetWebsitesFromCSV(String file)
+        private static Website obtainWebsiteInfo(string url)
         {
-            List<string> result = new List<string>();
-            if (!String.IsNullOrEmpty(file))
+            Website result = new Website();
+            result.Url = url;
+            result.WasDetected = false;
+            if (!String.IsNullOrEmpty(url))
             {
+                bool getLanguage, getCms, getJsLibraries;
+                getLanguage = getCms = getJsLibraries = false;
                 try
                 {
-                    StreamReader sr = new StreamReader(@file);
-                    var csv = new CsvReader(sr);
-                    while (csv.Read())
+
+                    Console.WriteLine("\n"+ url + "  -- Obteniendo información ...");
+                HtmlDocument doc = new HtmlWeb().Load("http://w3techs.com/sites/info/" + url);
+                 
+                //HtmlDocument doc = new HtmlWeb().Load("http://guess.scritch.org/%2Bguess/?url=skyalert.mx");
+                HtmlNode main = doc.DocumentNode.SelectSingleNode("//*[@class='tech_main']");
+                    String mainText = main.InnerHtml;
+                    if(mainText.Contains("This website is redirected to"))
                     {
-                        //En esta línea es donde se define la columna de donde se toman las urls
-                        string stringField = csv.GetField<string>(2);
-                        //TODO: falra la validaciónde stringField
-                        if (!String.IsNullOrEmpty(stringField))
+                        HtmlNode URLsugerida = main.SelectSingleNode("//*[@class='no_und']");
+                        Console.WriteLine("La url es incorrecta se está actualizando a "+ URLsugerida.InnerText);
+                        Console.WriteLine("Es necesario volver a correr el programa para volver a intentar obtener la info de este sitio.");
+                        result.Url = URLsugerida.InnerText;
+
+
+                    }else if (mainText.Contains("Site under maintenance"))
+                    {
+                        LimitReached = true;
+                        Console.WriteLine("Llegaste a la cantidad de requests permitidos. ");
+                    }
+                    else
+                    {
+                        if (main != null)
                         {
-                            result.Add(stringField);
-                            Console.WriteLine(stringField + "\n");
+                            Console.WriteLine("Info obtenida.");
+                            result.WasDetected = true;
+                            Contador++;
+
+                            HtmlNode site = main.SelectSingleNode(".//h1");
+                            foreach (HtmlNode node in main.ChildNodes)
+                            {
+                                if (getLanguage)
+                                {
+                                    if (node.OuterHtml.Contains("si_tech") && !node.OuterHtml.Contains("si_tech_np"))
+                                    {
+                                        HtmlNode langName = node.NextSibling;
+                                        HtmlNode langVersion = langName.NextSibling;
+                                        if (!String.IsNullOrEmpty(langName.InnerText))
+                                        {
+                                            result.LanguageName = langName.InnerText.Trim();
+                                            result.LanguageVersion = (String.IsNullOrEmpty(langVersion.InnerText)) ? "N/A" : langVersion.InnerText.Trim();
+                                            Console.WriteLine("Lenguaje detectado: " + result.LanguageName + " v: " + result.LanguageVersion);
+                                        }
+                                        getLanguage = false;
+                                    }
+
+                                }
+                                else if (getCms)
+                                {
+                                    if (node.OuterHtml.Contains("si_tech") && !node.OuterHtml.Contains("si_tech_np"))
+                                    {
+                                        HtmlNode cmsName = node.NextSibling;
+                                        HtmlNode cmsVersion = cmsName.NextSibling;
+                                        if (!String.IsNullOrEmpty(cmsName.InnerText))
+                                        {
+                                            result.CMSName = cmsName.InnerText.Trim();
+                                            result.CMSVersion = (String.IsNullOrEmpty(cmsVersion.InnerText)) ? "N/A" : cmsVersion.InnerText.Trim();
+                                            Console.WriteLine("CMS detectado: " + result.CMSName + " v: " + result.CMSVersion);
+
+                                        }
+                                        getCms = false;
+                                    }
+
+                                }
+                                else if (getJsLibraries)
+                                {
+                                    if (node.OuterHtml.Contains("si_tech") && !node.OuterHtml.Contains("si_tech_np"))
+                                    {
+                                        HtmlNode libraryName = node.NextSibling;
+                                        HtmlNode libraryVersion = libraryName.NextSibling;
+                                        if (!String.IsNullOrEmpty(libraryName.InnerText))
+                                        {
+                                            result.JSLibName = libraryName.InnerText.Trim();
+                                            result.JSLibVersion = (String.IsNullOrEmpty(libraryVersion.InnerText)) ? "N/A" : libraryVersion.InnerText.Trim();
+                                            Console.WriteLine("JS Lib detectado: " + result.JSLibName + " v: " + result.JSLibVersion);
+
+                                        }
+                                        getJsLibraries = false;
+                                    }
+                                }
+                                if (node.InnerText.Equals("Server-side Programming Language"))
+                                {
+                                    getLanguage = true;
+                                    //Console.WriteLine(node.InnerText);
+                                }
+                                else if (node.InnerText.Equals("Content Management System"))
+                                {
+                                    getCms = true;
+                                    //Console.WriteLine(node.InnerText);
+                                }
+                                else if (node.InnerText.Equals("JavaScript Libraries"))
+                                {
+                                    getJsLibraries = true;
+                                    //Console.WriteLine(node.InnerText);
+                                }
+
+
+                            }
+                            Console.WriteLine("Scan del sitio terminado");
+                        }
+                        else
+                        {//Falta checar si ya dice under-maintenance
+                            Console.WriteLine("El sitio " + url + " no fue encontado en el scanner (probablemente no ha sido indexado), intente después\n");
+                            Console.WriteLine("O probablemente ya se acabaron los requests");
                         }
                     }
 
+                
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("No se encontró el archivo: " + file +" y la excepción dice: \n");
-                    Console.WriteLine(e);
+                    result = new Website();
+                    result.Url = url;
+                    result.WasDetected = false;
+                    Console.WriteLine("Hubo un error al sacar la información del Url: " + url);
+                    Console.WriteLine("La excepción dice: \n"+ e);
+                    throw;
                 }
-
-
-            }else
-            {
-                Console.WriteLine("ERRROR: El nombre del archivo es vacío\n");
             }
+
             return result;
+
         }
-        private static void Execute(string url)
-        {
 
-            if (String.IsNullOrEmpty(url))
-            {
-                return;
-            }
-            Website result = new Website();
-            result.Url = url;
-            result.wasFound = false;
-            bool getLanguage, getCms, getJsLibraries;
-            getLanguage = getCms = getJsLibraries = false;
-            //HtmlDocument doc = new HtmlWeb().Load("http://w3techs.com/sites/info/" + url);
-            HtmlDocument doc = new HtmlWeb().Load("http://guess.scritch.org/%2Bguess/?url=skyalert.mx");
-            HtmlNode main = doc.DocumentNode.SelectSingleNode("//*[@class='tech_main']");
-            if (main != null)
-            {
-                result.wasFound = true;
-                HtmlNode site = main.SelectSingleNode(".//h1");
-                foreach (HtmlNode node in main.ChildNodes)
-                {
-                    if (getLanguage)
-                    {
-                        if (node.OuterHtml.Contains("si_tech") && !node.OuterHtml.Contains("si_tech_np"))
-                        {
-                            result.Languages = new Dictionary<string, string>();
-                            HtmlNode langName = node.NextSibling;
-                            HtmlNode langVersion = langName.NextSibling;
-                            if (!String.IsNullOrEmpty(langName.InnerText))
-                            {
-                                result.Languages.Add(langName.InnerText.Trim(), (String.IsNullOrEmpty(langVersion.InnerText)) ? "N/A" : langVersion.InnerText.Trim());
-                            }
-                            getLanguage = false;
-                        }
-
-                    }
-                    else if (getCms)
-                    {
-                        if (node.OuterHtml.Contains("si_tech") && !node.OuterHtml.Contains("si_tech_np"))
-                        {
-                            result.Cms = new Dictionary<string, string>();
-                            HtmlNode cmsName = node.NextSibling;
-                            HtmlNode cmsVersion = cmsName.NextSibling;
-                            if (!String.IsNullOrEmpty(cmsName.InnerText))
-                            {
-                                result.Cms.Add(cmsName.InnerText.Trim(), (String.IsNullOrEmpty(cmsVersion.InnerText)) ? "N/A" : cmsVersion.InnerText.Trim());
-                            }
-                            getCms = false;
-                        }
-
-                    }
-                    else if (getJsLibraries)
-                    {
-                        if (node.OuterHtml.Contains("si_tech") && !node.OuterHtml.Contains("si_tech_np"))
-                        {
-                            result.JSLibraries = new Dictionary<string, string>();
-                            HtmlNode libraryName = node.NextSibling;
-                            HtmlNode libraryVersion = libraryName.NextSibling;
-                            if (!String.IsNullOrEmpty(libraryName.InnerText))
-                            {
-                                result.JSLibraries.Add(libraryName.InnerText.Trim(), (String.IsNullOrEmpty(libraryVersion.InnerText)) ? "N/A" : libraryVersion.InnerText.Trim());
-                            }
-                            getJsLibraries = false;
-                        }
-                    }
-                    if (node.InnerText.Equals("Server-side Programming Language"))
-                    {
-                        getLanguage = true;
-                        //Console.WriteLine(node.InnerText);
-                    }
-                    else if (node.InnerText.Equals("Content Management System"))
-                    {
-                        getCms = true;
-                        //Console.WriteLine(node.InnerText);
-                    }
-                    else if (node.InnerText.Equals("JavaScript Libraries"))
-                    {
-                        getJsLibraries = true;
-                        //Console.WriteLine(node.InnerText);
-                    }
-
-
-                }
-            }
-            else
-            {
-                Console.WriteLine("El sitio "+ url + " no fue encontado en el scanner (probablemente no ha sido indexado), intente después\n");
-            }
-
-            Lista.Add(result);
-        } 
+      
+       
     }
 }
